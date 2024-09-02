@@ -8,7 +8,6 @@
 
 ```bash
 $git clone git@github.com:paulindavzl/blockchain.git
-$pip install -r requirements.txt
 ```
 ___
 ## **_Aplicação_**
