@@ -1,0 +1,7 @@
+future_updates
+__pycache__
+.pytest_cache
+.last_tmp.py
+*.pyc
+.env
+env
