@@ -253,22 +253,3 @@ class Blockchain:
         
         return [2, "00"]
         
-
-if __name__ == "__main__":
-    data_test = {
-            "id": 1,
-            "name": "Teste",
-            "previous_hash": "GenerateHash",
-            "id_previous_hash": 0
-    }
-    a = Block()
-    a.update(data_test)
-    a.generate()
-    a_t = Blockchain().is_valid(a.show())
-    print(a_t)
-    
-    b = Block()
-    b.update(data_test)
-    b.generate()
-    b_t = Blockchain().is_valid(b.show())
-    print(b_t)
