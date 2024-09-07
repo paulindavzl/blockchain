@@ -1,4 +1,5 @@
 import pytest
+import datetime as dt
 import re
 import sys
 import os
@@ -10,15 +11,18 @@ from src.utils.analyze_expire import expire, organize_expire_time_seconds, organ
 # dados usados nos testes
 @pytest.fixture
 def datetime():
-    datetime_test = "01/09/2024-21:11:00"
+    return "01/09/2024-21:11:00"
     
-    return datetime_test
+# formato da data e hora
+@pytest.fixture
+def format():
+    return "%d/%m/%Y-%H:%M:%S"
     
 # testa organizar a data de expiração em alguns segundos
-def test_organize_expire_time_seconds(datetime):
+def test_organize_expire_time_seconds(datetime, format):
     expected_response = {
         "result": "Success",
-        "data": "01/09/2024-21:11:30"
+        "data": dt.datetime.strptime("01/09/2024-21:11:30", format)
     }
     expire_time = "30"
     
@@ -26,10 +30,10 @@ def test_organize_expire_time_seconds(datetime):
     
 
 # testa organizar a data de expiração em alguns minutos
-def test_organize_expire_time_minutes(datetime):
+def test_organize_expire_time_minutes(datetime, format):
     expected_response = {
         "result": "Success",
-        "data": "01/09/2024-21:13:00"
+        "data": dt.datetime.strptime("01/09/2024-21:13:00", format)
     }
     expire_time = "2"
     
@@ -37,10 +41,10 @@ def test_organize_expire_time_minutes(datetime):
     
 
 # testa organizar a data de expiração em algumas horas
-def test_organize_expire_time_hours(datetime):
+def test_organize_expire_time_hours(datetime, format):
     expected_response = {
         "result": "Success",
-        "data": "01/09/2024-22:11:00"
+        "data": dt.datetime.strptime("01/09/2024-22:11:00", format)
     }
     expire_time = "1"
     
@@ -48,10 +52,10 @@ def test_organize_expire_time_hours(datetime):
     
 
 # testa a função que gerencia a expiração com segundos sem "s"
-def test_expire_second_not_s(datetime):
+def test_expire_second_not_s(datetime, format):
     expected_response = {
         "result": "Success",
-        "data": "01/09/2024-21:13:00"
+        "data": dt.datetime.strptime("01/09/2024-21:13:00", format)
     }
     expire_time = "120"
     
@@ -59,10 +63,10 @@ def test_expire_second_not_s(datetime):
     
     
 # testa a função que gerencia a expiração com segundos com "s"
-def test_expire_seconds(datetime):
+def test_expire_seconds(datetime, format):
     expected_response = {
         "result": "Success",
-        "data": "01/09/2024-21:14:10"
+        "data": dt.datetime.strptime("01/09/2024-21:14:10", format)
     }
     expire_time = "190s"
     
@@ -70,10 +74,10 @@ def test_expire_seconds(datetime):
     
     
 # testa a função que gerencia a expiração com minutos
-def test_expire_minutes(datetime):
+def test_expire_minutes(datetime, format):
     expected_response = {
         "result": "Success",
-        "data": "01/09/2024-22:11:00"
+        "data": dt.datetime.strptime("01/09/2024-22:11:00", format)
     }
     expire_time = "60m"
     
@@ -81,10 +85,10 @@ def test_expire_minutes(datetime):
     
     
 # testa a função que gerencia a expiração com horas
-def test_expire_hours(datetime):
+def test_expire_hours(datetime, format):
     expected_response = {
         "result": "Success",
-        "data": "02/09/2024-21:11:00"
+        "data": dt.datetime.strptime("02/09/2024-21:11:00", format)
     }
     expire_time = "24h"
     

@@ -7,7 +7,8 @@
 ## **_Instalação_**
 
 ```bash
-$git clone git@github.com:paulindavzl/blockchain.git
+$ git clone git@github.com:paulindavzl/blockchain.git
+$ pip install -r requirements.txt
 ```
 ___
 ## **_Aplicação_**
@@ -205,6 +206,8 @@ my_block = Block(expire='1h')
 
 O atributo `expire` aceita somente números com uma possível letra no final, indicando a medida de tempo (`s`, `m` ou `h`).
 
+Valores negativos serão convertidos em valores positivos!
+
 Caso a medida de tempo não for informada, o valor dado será tratado em `segundos`!
 
 Caso outra letra seja passada ou a letra esteja em `maiúscula`, um erro será gerado! Use somente letras minúsculas!
@@ -219,10 +222,10 @@ Caso outra letra seja passada ou a letra esteja em `maiúscula`, um erro será g
 from blockchain import Block
 
 # instância da classe Block() passando requirement
-my_block = Block(requirement=[2, '00'])
+my_block = Block(requirement='00')
 ```
 
-Por padrão, `requirement=[2, '00']`, e para modificá-lo, passe uma lista com quantos caractéres iniciais devem ser analisados e como eles devem estar!
+Por padrão, `requirement='00'`, e para modificá-lo, passe uma lista com quantos caractéres iniciais devem ser analisados e como eles devem estar!
 
 Não é recomendado que modifique.
 ## **⚠️exigências muito longas podem prejudicar o desempenho!⚠️**

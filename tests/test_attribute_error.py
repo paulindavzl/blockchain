@@ -25,7 +25,9 @@ def get_message_error(data):
     errors = {
         "attribute_order_error": f"The order you set ({cause_error}) is not accepted. Use 'top', 'bottom' or 'random'. See documentation at github.com/paulindavzl/blockchain",
         "attribute_exception_error": f"'{cause_error}' is not accepted as a value for 'exception'. Set to True or False. See documentation at github.com/paulindavzl/blockchain",
-        "attribute_expire_not_valid": "The value assigned to expire is invalid! See documentation at github.com/paulindavzl/blockchain"
+        "attribute_expire_not_valid": "The value assigned to expire is invalid! See documentation at github.com/paulindavzl/blockchain",
+        "requirement_not_str": f"The value of the requirement attribute must be string. '{cause_error}' is not string. See documentation at github.com/paulindavzl/blockchain",
+            "requirement_not_valid": f"The requirement attribute only accepts lowercase letters or numbers! '{cause_error}' is invalid. See documentation at github.com/paulindavzl/blockchain"
     }
     
     error = errors.get(error_name)
@@ -55,6 +57,28 @@ def test_attribute_exception_error(data):
 # testa o erro de atribuir um valor não aceito à exception (Blockchain)
 def test_attribute_expire_not_valid(data):
     data["error_name"] = "attribute_expire_not_valid"
+    expected_message_error = re.escape(get_message_error(data))
+    class_error = AttributeError(data)
+    
+    with pytest.raises(AttributeError, match=expected_message_error):
+        raise class_error
+        
+        
+# testa o valor de requirement diferente de string (Blockchain)
+def test_attribute_requirement_not_str(data):
+    data["error_name"] = "requirement_not_str"
+    data["cause_error"] = 10
+    expected_message_error = re.escape(get_message_error(data))
+    class_error = AttributeError(data)
+    
+    with pytest.raises(AttributeError, match=expected_message_error):
+        raise class_error
+        
+        
+# testa os valores de requirement (Blockchain)
+def test_attribute_requirement_not_valid(data):
+    data["error_name"] = "requirement_not_valid"
+    data["cause_error"] = "0 "
     expected_message_error = re.escape(get_message_error(data))
     class_error = AttributeError(data)
     

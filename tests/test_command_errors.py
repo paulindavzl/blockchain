@@ -17,13 +17,6 @@ def data():
     
     return data_test
     
-# base do erro usado nos testes
-@pytest.fixture
-def error():
-    error_test = {
-        "result": "Error"
-    }
-    
 # retorna a mensagem de erro de acordo com o nome do mesmo
 def get_message_error(data):
     error_name = data.get("error_name")

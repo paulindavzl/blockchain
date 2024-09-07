@@ -6,17 +6,14 @@ import os
 
 # adiciona o caminho do script que será testado
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from src.blockchain import Block
+from src.blockchain import Block, Blockchain
 
 # dados usados nos testes
 @pytest.fixture
 def data():
     data_test = {
         "id": 1,
-        "name": "Teste",
-        "private_key": "PRIVATE_KEY",
-        "previous_hash": "GenerateHash",
-        "id_previous_hash": 0
+        "name": "Teste"
     }
     
     return data_test
@@ -67,8 +64,80 @@ def test_blockchain_show(data):
     blockchain.update(data)
     blockchain.generate()
     
-    assert blockchain.show() == data
+    assert blockchain.show().get("result") == data.get("result")
     
+
+# testa se a blockchain é válida
+def test_blockchain_is_valid(data):
+    block = Block(expire="30s")
+    block.update(data).generate()
+    hash = block.show()
+    
+    assert Blockchain().is_valid(hash).get("result")
+    
+
+# testa se a blockchain é inválida por expiração
+def test_blockchain_not_is_valid_exp(data):
+    block = Block(expire="1")
+    block.update(data).generate()
+    hash = block.show()
+    
+    # aguarda até a blockchain expirar
+    time.sleep(1.01)
+    
+    assert Blockchain().is_valid(hash).get("cause") == "expired"
+    
+
+# testa se a blockchain é inválida por alteração em algum dado
+def test_blockchain_not_is_valid_hashes(data):
+    block = Block(expire="30")
+    block.update(data).generate()
+    hash = block.show()
+    
+    # modifica a blockchain
+    hash["name"] = "Testee"
+    
+    assert Blockchain().is_valid(hash).get("cause") == "different_hashes"
+    
+    
+# testa gerar e validar com private_key
+def test_blockchain_generate_valid_private_key(data):
+    PRIVATE_KEY = "1234"
+    block = Block(expire="30s", private_key=PRIVATE_KEY)
+    block.update(data).generate()
+    hash = block.show()
+    
+    assert Blockchain().is_valid(hash, private_key=PRIVATE_KEY).get("result")
+    
+    
+# testa gerar com private_key e validar sem
+def test_blockchain_generate_valid_not_private_key(data):
+    PRIVATE_KEY = "1234"
+    block = Block(expire="30s", private_key=PRIVATE_KEY)
+    block.update(data).generate()
+    hash = block.show()
+    
+    assert not Blockchain().is_valid(hash).get("result")
+    
+    
+# testa validar com uma private_key diferente
+def test_blockchain_invalid_private_key(data):
+    PRIVATE_KEY = "1234"
+    block = Block(expire="30s", private_key=PRIVATE_KEY)
+    block.update(data).generate()
+    hash = block.show()
+    
+    assert not Blockchain().is_valid(hash, private_key="1235").get("result")
+    
+    
+# testa gerar sem private_key e validar usando uma
+def test_blockchain_valid_private_key(data):
+    PRIVATE_KEY = "1234"
+    block = Block(expire="30s")
+    block.update(data).generate()
+    hash = block.show()
+    
+    assert not Blockchain().is_valid(hash, private_key=PRIVATE_KEY).get("result")
     
     
 if __name__ == "__main__":

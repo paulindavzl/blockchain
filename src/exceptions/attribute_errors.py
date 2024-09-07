@@ -10,5 +10,7 @@ class AttributeError(Exception):
         self.__messages_errors = {
             "attribute_order_error": f"The order you set ({error}) is not accepted. Use 'top', 'bottom' or 'random'. See documentation at github.com/paulindavzl/blockchain",
             "attribute_exception_error": f"'{error}' is not accepted as a value for 'exception'. Set to True or False. See documentation at github.com/paulindavzl/blockchain",
-            "attribute_expire_not_valid": "The value assigned to expire is invalid! See documentation at github.com/paulindavzl/blockchain"
+            "attribute_expire_not_valid": "The value assigned to expire is invalid! See documentation at github.com/paulindavzl/blockchain",
+            "requirement_not_str": f"The value of the requirement attribute must be string. '{error}' is not string. See documentation at github.com/paulindavzl/blockchain",
+            "requirement_not_valid": f"The requirement attribute only accepts lowercase letters or numbers! '{error}' is invalid. See documentation at github.com/paulindavzl/blockchain"
         }

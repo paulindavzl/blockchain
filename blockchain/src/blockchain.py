@@ -2,12 +2,13 @@ import hashlib
 import random
 import time
 import datetime
+import string
 from utils import organizer_data, analyze_expire
 from exceptions import data_errors, command_errors, attribute_errors
 
 # estrutura da Blockchain
 class Block:
-    def __init__(self, init_order="top", exception=True, expire=False, private_key=None, requirement=[2, "00"]):
+    def __init__(self, init_order="top", exception=True, expire=False, private_key=None, requirement="00"):
         self.__init_order = init_order
         self.__exception = exception
         self.__expire = expire
@@ -17,10 +18,21 @@ class Block:
         self.__nonce = 0
         self.__hash = "undefined"
         self.__req = requirement
+        self.__format = "%d/%m/%Y-%H:%M:%S"
         
         
     # adiciona ou atualiza os dados da blockchain
     def update(self, data):
+        self.__verify_requirement()
+        
+        if not isinstance(self.__exception, bool):
+            result = {
+                "result": "Error",
+                "error_name": "attribute_exception_error",
+                "cause_error": self.__exception
+            }
+            raise attribute_errors.AttributeError(result)
+        
         if isinstance(data, dict):
             self.__data = data.copy()
             self.__data["init_order"] = self.__init_order
@@ -61,12 +73,13 @@ class Block:
             self.__sequence = data.get("sequence")
         
         if not self.__is_analyze:
-            while self.__hash[:self.__req[0]] != self.__req[1]:
+            while self.__hash[:len(self.__req)] != self.__req:
                 self.__calculate_hash(data)
         else:
             self.__calculate_hash(data)
         
         self.__status = "generated"
+        self.__data["result"] = "Success"
         return self
         
     
@@ -106,9 +119,40 @@ class Block:
         if self.__init_order == "random":
             data["sequence"] = self.__sequence
         if self.__is_analyze:
-            return data.get("hash")
+            return {"hash": data.get("hash"), "result": data.get("result")}
         
         return data
+        
+        
+    # verifica se requirement está de acordo com o esperado
+    def __verify_requirement(self):
+        # garante que requirement é string
+        if not isinstance(self.__req, str):
+            result = {
+                "result": "Error",
+                "error_name": "requirement_not_str",
+                "cause_error": self.__req
+            }
+            if self.__exception:
+                raise attribute_errors.AttributeError(result)
+            
+            self.__req = "00"
+        
+        # cria uma lista com letras e números
+        accepted = list(string.ascii_lowercase) + [str(i) for i in list(range(10))]
+        
+        # garante que requirement é string
+        for char in self.__req:
+            if char not in accepted:
+                result = {
+                    "result": "Error",
+                    "error_name": "requirement_not_valid",
+                    "cause_error": self.__req
+                }
+                if self.__exception:
+                    raise attribute_errors.AttributeError(result)
+                    
+                self.__req = "00"
         
         
     # obtém o nonce
@@ -130,7 +174,7 @@ class Block:
             
     # define a data e a hora em que a blockchain está sendo gerada
     def __set_datetime(self):
-        self.__datetime = datetime.datetime.now().strftime("%d/%m/%Y-%H:%M:%S")
+        self.__datetime = datetime.datetime.now().strftime(self.__format)
         self.__data["datetime"] = self.__datetime
         
         return {"result": "Success"}
@@ -140,11 +184,14 @@ class Block:
     def __set_expire_time(self):
         result = analyze_expire.expire(self.__datetime, self.__expire)
         if result.get("result") == "Success":
-            self.__expire = result.get("data")
+            self.__expire = result.get("data").strftime(self.__format)
             self.__data["expire"] = self.__expire
             return {"result": "Success"}
         
-        raise attribute_errors.AttributeError(result)
+        if self.__exception:
+            raise attribute_errors.AttributeError(result)
+        
+        self.__expire = False
         
         
     # define os dados quando para análise
@@ -166,6 +213,7 @@ class Blockchain:
         expire = self.__get_expire_time()
         requirement = self.__get_requirement()
         init_order = self.__get_init_order()
+        
         data = {
             "private_key": private_key,
             "expire": expire,
@@ -178,7 +226,7 @@ class Blockchain:
         self.__block.set_analyze_data(data)
         self.__generate_blockchain()
         
-        hash_generated = self.__block.show()
+        hash_generated = self.__block.show().get("hash")
         
         
         # compara as hashes
@@ -191,8 +239,7 @@ class Blockchain:
             return result
             
         if expire:
-            return analyze_expire.is_valid(self.__blockchain.get("expire"))
-        return {"result": True}
+            return analyze_expire.is_valid(expire)
         
     
     # obtém a ordem em que os dados serão organizados
@@ -205,8 +252,6 @@ class Blockchain:
     
     # compara as hashes
     def __compare(self, hash_ge, hash_an):
-        print(hash_ge)
-        print(hash_an)
         return hash_ge == hash_an
         
         
@@ -223,7 +268,8 @@ class Blockchain:
         post_generation_data = [
             "hash",
             "nonce",
-            "requirement"
+            "requirement",
+            "result"
         ]
         data = self.__blockchain
         keys = list(data.keys())
@@ -240,8 +286,9 @@ class Blockchain:
     
     # verifica se tem tempo de expiração
     def __get_expire_time(self):
-        if self.__blockchain.get("expire") != None:
-            return self.__blockchain.get("expire")
+        expire = self.__blockchain.get("expire")
+        if expire != None:
+            return expire
             
         return False
         
@@ -251,5 +298,4 @@ class Blockchain:
         if self.__blockchain.get("requirement") != None:
             return self.__blockchain.get("requirement")
         
-        return [2, "00"]
-        
+        return "00"
